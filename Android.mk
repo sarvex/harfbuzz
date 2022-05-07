@@ -2,7 +2,6 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(CLEAR_VARS)
 
-
 LOCAL_SRC_FILES = \
     src/hb-aat-layout.cc \
     src/hb-aat-map.cc \
@@ -56,8 +55,7 @@ LOCAL_CPP_EXTENSION := .cc
 LOCAL_C_INCLUDES = \
     $(LOCAL_PATH)/ \
     $(LOCAL_PATH)/src/ \
-    $(LOCAL_PATH)/../freetype-2.10.4/include/ \
-
+    $(LOCAL_PATH)/../freetype/include/ \
 
 LOCAL_STATIC_LIBRARIES += freetype
 
@@ -70,4 +68,3 @@ LOCAL_EXPORT_C_INCLUDES = $(LOCAL_PATH)/src/
 LOCAL_MODULE:= harfbuzz
 
 include $(BUILD_STATIC_LIBRARY)
-
