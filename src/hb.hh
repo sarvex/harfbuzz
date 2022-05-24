@@ -180,8 +180,10 @@
 #define HB_AAT_H_IN
 
 #if 0
-#  For Android & SDL, it doesn't compile with ndk-r21d
-#  https://github.com/harfbuzz/harfbuzz/commit/7cb22ba7ebf6ef053790a3201cb7014bacd51e46
+/*
+  For Android & SDL, it doesn't compile with ndk-r21d
+  https://github.com/harfbuzz/harfbuzz/commit/7cb22ba7ebf6ef053790a3201cb7014bacd51e46
+*/
 #include <cassert>
 #include <cfloat>
 #include <climits>
@@ -413,8 +415,10 @@ extern "C" void  hb_free_impl(void *ptr);
 
 #ifndef HB_NO_ERRNO
 #if 0
-#  For Android & SDL, it doesn't compile with ndk-r21d
-#  https://github.com/harfbuzz/harfbuzz/commit/7cb22ba7ebf6ef053790a3201cb7014bacd51e46
+/*
+  For Android & SDL, it doesn't compile with ndk-r21d
+  https://github.com/harfbuzz/harfbuzz/commit/7cb22ba7ebf6ef053790a3201cb7014bacd51e46
+*/
 #  include <cerrno>
 #else
 #  include <errno.h>
