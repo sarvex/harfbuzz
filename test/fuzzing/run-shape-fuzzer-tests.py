@@ -24,7 +24,7 @@ def cmd (command):
 srcdir = os.getenv ("srcdir", ".")
 EXEEXT = os.getenv ("EXEEXT", "")
 top_builddir = os.getenv ("top_builddir", ".")
-hb_shape_fuzzer = os.path.join (top_builddir, "hb-shape-fuzzer" + EXEEXT)
+hb_shape_fuzzer = os.path.join(top_builddir, f"hb-shape-fuzzer{EXEEXT}")
 
 if not os.path.exists (hb_shape_fuzzer):
 	if len (sys.argv) == 1 or not os.path.exists (sys.argv[1]):
@@ -57,7 +57,7 @@ for file in os.listdir (parent_path):
 		print (text)
 
 	if returncode != 0:
-		print ('failure on %s' % file)
+		print(f'failure on {file}')
 		fails = fails + 1
 
 

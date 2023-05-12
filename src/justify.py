@@ -168,21 +168,14 @@ def typeset(face, text, target_advance):
         if advance > target_advance:
             # Shrink
             ret, buf, variation = justify(face, words, advance, target_advance)
-            if ret:
+            if ret or len(words) <= 1:
                 lines.append((buf, variation))
                 words = []
-            # If if fails, pop the last word and shrink, and hope for the best.
-            # A too short line is better than too long.
-            elif len(words) > 1:
+            else:
                 words.pop()
                 _, buf, variation = justify(face, words, advance, target_advance)
                 lines.append((buf, variation))
                 words = [word]
-            # But if it is one word, meh.
-            else:
-                lines.append((buf, variation))
-                words = []
-
     # Justify last line
     if words:
         _, buf, variation = justify(face, words, advance, target_advance)

@@ -19,27 +19,22 @@ class Test:
 		elif self.subset == "no-unicodes":
 			return ""
 		elif re.match("^U\+", self.subset):
-			s = re.sub (r"U\+", "", self.subset)
-			return s
+			return re.sub (r"U\+", "", self.subset)
 		else:
-			return ",".join("%X" % ord(c) for (i, c) in enumerate(self.subset))
+			return ",".join("%X" % ord(c) for c in self.subset)
 
 	def instance_name(self):
 		if not self.instance:
 			return self.instance
 		else:
-			s = "." + self.instance.replace(':', '-')
-			return s
+			return "." + self.instance.replace(':', '-')
 
 	def get_profile_flags(self):
 		with open (self.profile_path, mode="r", encoding="utf-8") as f:
 		    return f.read().splitlines()
 
 	def get_instance_flags(self):
-		if not self.instance:
-			return []
-		else:
-			return self.instance.split(',')
+		return [] if not self.instance else self.instance.split(',')
 
 	def get_font_name(self):
 		font_base_name = os.path.basename(self.font_path)
@@ -47,21 +42,11 @@ class Test:
 		profile_name = os.path.splitext(os.path.basename(self.profile_path))[0]
 
 		if self.unicodes() == "*":
-			return "%s.%s.retain-all-codepoint%s%s" % (font_base_name_parts[0],
-				       profile_name,
-				       self.instance_name(),
-				       font_base_name_parts[1])
+			return f"{font_base_name_parts[0]}.{profile_name}.retain-all-codepoint{self.instance_name()}{font_base_name_parts[1]}"
 		elif self.unicodes() == "":
-			return "%s.%s.no-unicodes%s%s" % (font_base_name_parts[0],
-				       profile_name,
-				       self.instance_name(),
-				       font_base_name_parts[1])
+			return f"{font_base_name_parts[0]}.{profile_name}.no-unicodes{self.instance_name()}{font_base_name_parts[1]}"
 		else:
-			return "%s.%s.%s%s%s" % (font_base_name_parts[0],
-				       profile_name,
-				       self.unicodes(),
-				       self.instance_name(),
-				       font_base_name_parts[1])
+			return f"{font_base_name_parts[0]}.{profile_name}.{self.unicodes()}{self.instance_name()}{font_base_name_parts[1]}"
 
 	def get_font_extension(self):
 		font_base_name = os.path.basename(self.font_path)
@@ -89,7 +74,7 @@ class SubsetTestSuite:
 		if not os.path.exists(output_dir):
 			os.mkdir(output_dir)
 		if not os.path.isdir(output_dir):
-			raise Exception("%s is not a directory." % output_dir)
+			raise Exception(f"{output_dir} is not a directory.")
 
 		return output_dir
 

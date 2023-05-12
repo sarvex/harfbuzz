@@ -7,6 +7,7 @@ Input file:
 * https://www.unicode.org/Public/emoji/latest/emoji-test.txt
 """
 
+
 import sys
 from collections import OrderedDict
 import packTab
@@ -18,7 +19,7 @@ f = open(sys.argv[1])
 header = [f.readline () for _ in range(10)]
 
 ranges = OrderedDict()
-for line in f.readlines():
+for line in f:
 	line = line.strip()
 	if not line or line[0] == '#':
 		continue
@@ -48,7 +49,7 @@ print (" *")
 print (" * on file with this header:")
 print (" *")
 for l in header:
-	print (" * %s" % (l.strip()))
+	print(f" * {l.strip()}")
 print (" */")
 print ()
 print ("#ifndef HB_UNICODE_EMOJI_TABLE_HH")
@@ -60,14 +61,14 @@ print ()
 for typ, s in ranges.items():
 	if typ != "Extended_Pictographic": continue
 
-	arr = dict()
+	arr = {}
 	for start,end in s:
 		for i in range(start, end + 1):
 			arr[i] = 1
 
 	sol = packTab.pack_table(arr, 0, compression=9)
 	code = packTab.Code('_hb_emoji')
-	sol.genCode(code, 'is_'+typ)
+	sol.genCode(code, f'is_{typ}')
 	code.print_c(linkage='static inline')
 	print()
 
@@ -80,19 +81,19 @@ print ("/* == End of generated table == */")
 # Generate test file.
 sequences = []
 with open(sys.argv[2]) as f:
-    for line in f.readlines():
-        if "#" in line:
-            line = line[:line.index("#")]
-        if ";" in line:
-            line = line[:line.index(";")]
-        line = line.strip()
-        line = line.split(" ")
-        if len(line) < 2:
-            continue
-        sequences.append(line)
+	for line in f:
+		if "#" in line:
+		    line = line[:line.index("#")]
+		if ";" in line:
+		    line = line[:line.index(";")]
+		line = line.strip()
+		line = line.split(" ")
+		if len(line) < 2:
+		    continue
+		sequences.append(line)
 
 with open("../test/shape/data/in-house/tests/emoji-clusters.tests", "w") as f:
-    for sequence in sequences:
-        f.write("../fonts/AdobeBlank2.ttf;--no-glyph-names --no-positions --font-funcs=ot")
-        f.write(";" + ",".join(sequence))
-        f.write(";[" + "|".join("1=0" for c in sequence) + "]\n")
+	for sequence in sequences:
+		f.write("../fonts/AdobeBlank2.ttf;--no-glyph-names --no-positions --font-funcs=ot")
+		f.write(";" + ",".join(sequence))
+		f.write(";[" + "|".join("1=0" for _ in sequence) + "]\n")

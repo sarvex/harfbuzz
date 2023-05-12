@@ -4,6 +4,6 @@ from hb_test_tools import *
 import sys, os
 
 if len (sys.argv) < 2:
-	sys.exit ("usage: %s FILES..." % sys.argv[0])
+	sys.exit(f"usage: {sys.argv[0]} FILES...")
 
 ZipDiffer.diff_files (FileHelpers.open_file_or_stdin (f) for f in sys.argv[1:])

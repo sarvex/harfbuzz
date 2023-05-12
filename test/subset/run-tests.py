@@ -21,9 +21,9 @@ except ImportError:
 
 ots_sanitize = shutil.which ("ots-sanitize")
 
-def subset_cmd (command):
+def subset_cmd(command):
 	global hb_subset, process
-	print (hb_subset + ' ' + " ".join(command))
+	print(f'{hb_subset} ' + " ".join(command))
 	process.stdin.write ((';'.join (command) + '\n').encode ("utf-8"))
 	process.stdin.flush ()
 	return process.stdout.readline().decode ("utf-8").strip ()
@@ -36,34 +36,39 @@ def cmd (command):
 	print (stderrdata, end="", file=sys.stderr)
 	return stdoutdata, p.returncode
 
-def fail_test (test, cli_args, message):
-	print ('ERROR: %s' % message)
+def fail_test(test, cli_args, message):
+	print(f'ERROR: {message}')
 	print ('Test State:')
-	print ('  test.font_path    %s' % os.path.abspath (test.font_path))
-	print ('  test.profile_path %s' % os.path.abspath (test.profile_path))
+	print(f'  test.font_path    {os.path.abspath(test.font_path)}')
+	print(f'  test.profile_path {os.path.abspath(test.profile_path)}')
 	print ('  test.unicodes	    %s' % test.unicodes ())
 	expected_file = os.path.join (test_suite.get_output_directory (),
 				      test.get_font_name ())
 	print ('  expected_file	    %s' % os.path.abspath (expected_file))
 	return 1
 
-def run_test (test, should_check_ots, preprocess):
-	out_file = os.path.join (tempfile.mkdtemp (), test.get_font_name () + '-subset' + test.get_font_extension ())
-	cli_args = ["--font-file=" + test.font_path,
-		    "--output-file=" + out_file,
-		    "--unicodes=%s" % test.unicodes (),
-		    "--drop-tables+=DSIG",
-		    "--drop-tables-=sbix"]
+def run_test(test, should_check_ots, preprocess):
+	out_file = os.path.join(
+		tempfile.mkdtemp(),
+		f'{test.get_font_name()}-subset{test.get_font_extension()}',
+	)
+	cli_args = [
+		f"--font-file={test.font_path}",
+		f"--output-file={out_file}",
+		f"--unicodes={test.unicodes()}",
+		"--drop-tables+=DSIG",
+		"--drop-tables-=sbix",
+	]
 	if preprocess:
 		cli_args.extend(["--preprocess-face",])
 
 	cli_args.extend (test.get_profile_flags ())
 	if test.get_instance_flags ():
-		cli_args.extend (["--instance=%s" % ','.join(test.get_instance_flags ())])
+		cli_args.extend([f"--instance={','.join(test.get_instance_flags())}"])
 	ret = subset_cmd (cli_args)
 
 	if ret != "success":
-		return fail_test (test, cli_args, "%s failed" % ' '.join (cli_args))
+		return fail_test(test, cli_args, f"{' '.join(cli_args)} failed")
 
 	expected_file = os.path.join (test_suite.get_output_directory (), test.get_font_name ())
 	with open (expected_file, "rb") as fp:
@@ -116,10 +121,10 @@ def has_ots ():
 		return False
 	return True
 
-def check_ots (path):
+def check_ots(path):
 	ots_report, returncode = cmd ([ots_sanitize, path])
 	if returncode:
-		print ("OTS Failure: %s" % ots_report)
+		print(f"OTS Failure: {ots_report}")
 		return False
 	return True
 
@@ -141,7 +146,7 @@ process = subprocess.Popen ([hb_subset, '--batch'],
 fails = 0
 for path in args:
 	with open (path, mode="r", encoding="utf-8") as f:
-		print ("Running tests in " + path)
+		print(f"Running tests in {path}")
 		test_suite = SubsetTestSuite (path, f.read ())
 		for test in test_suite.tests ():
 			# Tests are run with and without preprocessing, results should be the

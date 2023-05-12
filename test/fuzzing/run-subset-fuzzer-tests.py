@@ -24,7 +24,7 @@ def cmd (command):
 srcdir = os.getenv ("srcdir", ".")
 EXEEXT = os.getenv ("EXEEXT", "")
 top_builddir = os.getenv ("top_builddir", ".")
-hb_subset_fuzzer = os.path.join (top_builddir, "hb-subset-fuzzer" + EXEEXT)
+hb_subset_fuzzer = os.path.join(top_builddir, f"hb-subset-fuzzer{EXEEXT}")
 
 if not os.path.exists (hb_subset_fuzzer):
         if len (sys.argv) < 2 or not os.path.exists (sys.argv[1]):
@@ -42,14 +42,14 @@ if os.getenv ('RUN_VALGRIND', ''):
 	if valgrind is None:
 		sys.exit ("""Valgrind requested but not found.""")
 
-def run_dir (parent_path):
+def run_dir(parent_path):
 	global fails
 	for file in os.listdir (parent_path):
 		path = os.path.join(parent_path, file)
 		# TODO: Run on all the fonts not just subset related ones
 		if "subset" not in path: continue
 
-		print ("running subset fuzzer against %s" % path)
+		print(f"running subset fuzzer against {path}")
 		if valgrind:
 			text, returncode = cmd ([valgrind, '--leak-check=full', '--error-exitcode=1', hb_subset_fuzzer, path])
 		else:
@@ -61,7 +61,7 @@ def run_dir (parent_path):
 			print (text)
 
 		if returncode != 0:
-			print ("failed for %s" % path)
+			print(f"failed for {path}")
 			fails = fails + 1
 
 

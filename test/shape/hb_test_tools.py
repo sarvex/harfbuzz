@@ -39,8 +39,8 @@ class ColorFormatter:
 
 	class HTML:
 		@staticmethod
-		def start_color (c):
-			return '<span style="background:%s">' % c
+		def start_color(c):
+			return f'<span style="background:{c}">'
 		@staticmethod
 		def end_color ():
 			return '</span>'
@@ -105,7 +105,7 @@ class DiffColorizer:
 		oo = [o.replace ('\n', '') for o in oo]
 		return [s1+s2+self.formatter.newline () for (s1,s2) in zip (self.symbols, oo) if s2]
 
-	def colorize_diff (self, f):
+	def colorize_diff(self, f):
 		lines = [None, None]
 		for l in f:
 			if l[0] not in self.symbols:
@@ -114,25 +114,22 @@ class DiffColorizer:
 			i = self.symbols.index (l[0])
 			if lines[i]:
 				# Flush
-				for line in self.colorize_lines (lines):
-					yield line
+				yield from self.colorize_lines (lines)
 				lines = [None, None]
 			lines[i] = l[1:]
 			if (all (lines)):
 				# Flush
-				for line in self.colorize_lines (lines):
-					yield line
+				yield from self.colorize_lines (lines)
 				lines = [None, None]
 		if (any (lines)):
 			# Flush
-			for line in self.colorize_lines (lines):
-				yield line
+			yield from self.colorize_lines (lines)
 
 
 class ZipDiffer:
 
 	@staticmethod
-	def diff_files (files, symbols=diff_symbols):
+	def diff_files(files, symbols=diff_symbols):
 		files = tuple (files) # in case it's a generator, copy it
 		try:
 			for lines in itertools.zip_longest (*files):
@@ -145,17 +142,17 @@ class ZipDiffer:
 						sys.stdout.writelines ([symbols[i], l])
 		except IOError as e:
 			if e.errno != errno.EPIPE:
-				sys.exit ("%s: %s: %s" % (sys.argv[0], e.filename, e.strerror))
+				sys.exit(f"{sys.argv[0]}: {e.filename}: {e.strerror}")
 
 
 class DiffFilters:
 
 	@staticmethod
-	def filter_failures (f):
+	def filter_failures(f):
 		for key, lines in DiffHelpers.separate_test_cases (f):
 			lines = list (lines)
 			if not DiffHelpers.test_passed (lines):
-				for l in lines: yield l
+				yield from lines
 
 class Stat:
 
@@ -256,15 +253,14 @@ class Test:
 class DiffHelpers:
 
 	@staticmethod
-	def separate_test_cases (f):
+	def separate_test_cases(f):
 		'''Reads lines from f, and if the lines have identifiers, ie.
 		   have a colon character, groups them by identifier,
 		   yielding lists of all lines with the same identifier.'''
 
-		def identifier (l):
-			if ':' in l[1:]:
-				return l[1:l.index (':')]
-			return l
+		def identifier(l):
+			return l[1:l.index (':')] if ':' in l[1:] else l
+
 		return groupby (f, key=identifier)
 
 	@staticmethod
@@ -317,10 +313,10 @@ class Ngram:
 class UtilMains:
 
 	@staticmethod
-	def process_multiple_files (callback, mnemonic = "FILE"):
+	def process_multiple_files(callback, mnemonic = "FILE"):
 
 		if "--help" in sys.argv:
-			sys.exit ("Usage: %s %s..." % (sys.argv[0], mnemonic))
+			sys.exit(f"Usage: {sys.argv[0]} {mnemonic}...")
 
 		try:
 			files = sys.argv[1:] if len (sys.argv) > 1 else ['-']
@@ -328,25 +324,25 @@ class UtilMains:
 				callback (FileHelpers.open_file_or_stdin (s))
 		except IOError as e:
 			if e.errno != errno.EPIPE:
-				sys.exit ("%s: %s: %s" % (sys.argv[0], e.filename, e.strerror))
+				sys.exit(f"{sys.argv[0]}: {e.filename}: {e.strerror}")
 
 	@staticmethod
-	def process_multiple_args (callback, mnemonic):
+	def process_multiple_args(callback, mnemonic):
 
 		if len (sys.argv) == 1 or "--help" in sys.argv:
-			sys.exit ("Usage: %s %s..." % (sys.argv[0], mnemonic))
+			sys.exit(f"Usage: {sys.argv[0]} {mnemonic}...")
 
 		try:
 			for s in sys.argv[1:]:
 				callback (s)
 		except IOError as e:
 			if e.errno != errno.EPIPE:
-				sys.exit ("%s: %s: %s" % (sys.argv[0], e.filename, e.strerror))
+				sys.exit(f"{sys.argv[0]}: {e.filename}: {e.strerror}")
 
 	@staticmethod
-	def filter_multiple_strings_or_stdin (callback, mnemonic, \
-					      separator = " ", \
-					      concat_separator = False):
+	def filter_multiple_strings_or_stdin(callback, mnemonic, \
+						      separator = " ", \
+						      concat_separator = False):
 
 		if "--help" in sys.argv:
 			sys.exit ("""Usage:
@@ -372,7 +368,7 @@ When called with no arguments, input is read from standard input.
 				print (separator.join (callback (x) for x in (args)))
 		except IOError as e:
 			if e.errno != errno.EPIPE:
-				sys.exit ("%s: %s: %s" % (sys.argv[0], e.filename, e.strerror))
+				sys.exit(f"{sys.argv[0]}: {e.filename}: {e.strerror}")
 
 
 class Unicode:
@@ -432,20 +428,18 @@ class Unicode:
 class FileHelpers:
 
 	@staticmethod
-	def open_file_or_stdin (f):
-		if f == '-':
-			return sys.stdin
-		return open (f)
+	def open_file_or_stdin(f):
+		return sys.stdin if f == '-' else open (f)
 
 
 class Manifest:
 
 	@staticmethod
-	def read (s, strict = True):
+	def read(s, strict = True):
 
 		if not os.path.exists (s):
 			if strict:
-				sys.exit ("%s: %s does not exist" % (sys.argv[0], s))
+				sys.exit(f"{sys.argv[0]}: {s} does not exist")
 			return
 
 		s = os.path.normpath (s)
@@ -456,17 +450,16 @@ class Manifest:
 				m = open (os.path.join (s, "MANIFEST"))
 				items = [x.strip () for x in m.readlines ()]
 				for f in items:
-					for p in Manifest.read (os.path.join (s, f)):
-						yield p
+					yield from Manifest.read (os.path.join (s, f))
 			except IOError:
 				if strict:
-					sys.exit ("%s: %s does not exist" % (sys.argv[0], os.path.join (s, "MANIFEST")))
+					sys.exit(f'{sys.argv[0]}: {os.path.join(s, "MANIFEST")} does not exist')
 				return
 		else:
 			yield s
 
 	@staticmethod
-	def update_recursive (s):
+	def update_recursive(s):
 
 		for dirpath, dirnames, filenames in os.walk (s, followlinks=True):
 
@@ -478,7 +471,7 @@ class Manifest:
 			dirnames.sort ()
 			filenames.sort ()
 			ms = os.path.join (dirpath, "MANIFEST")
-			print ("  GEN    %s" % ms)
+			print(f"  GEN    {ms}")
 			m = open (ms, "w")
 			for f in filenames:
 				print (f, file=m)
@@ -487,5 +480,3 @@ class Manifest:
 			for f in dirnames:
 				Manifest.update_recursive (os.path.join (dirpath, f))
 
-if __name__ == '__main__':
-	pass

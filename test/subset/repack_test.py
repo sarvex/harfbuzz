@@ -29,8 +29,5 @@ class RepackTest:
 		lines = definition.splitlines ()
 		self.font_name = lines.pop (0)
 		for line in lines:
-			line = line.strip()
-			if not line:
-				continue
-
-			self.codepoints.add (line)
+			if line := line.strip():
+				self.codepoints.add (line)

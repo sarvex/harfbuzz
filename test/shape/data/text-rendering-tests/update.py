@@ -24,7 +24,7 @@ def glyphstr (glyphs):
 			out.append (glyphname)
 	return '[' + '|'.join (out) + ']'
 
-def extract_tests (input):
+def extract_tests(input):
 	html = ET.fromstring (input)
 	found = False
 
@@ -46,8 +46,8 @@ def extract_tests (input):
 			glyphs.append ((glyphname, x, y))
 		opts = '--font-size=1000 --ned --remove-default-ignorables --font-funcs=ft'
 		if variations:
-			opts = opts + ' --variations=%s' % variations
-		result.append ("../fonts/%s:%s:%s:%s" % (font, opts, unistr(text), glyphstr(glyphs)))
+			opts += f' --variations={variations}'
+		result.append(f"../fonts/{font}:{opts}:{unistr(text)}:{glyphstr(glyphs)}")
 
 	for elt in html.findall (".//*[@class='expected-no-crash'][@ft:id]", namespaces):
 		found = True
@@ -57,8 +57,8 @@ def extract_tests (input):
 		variations = elt.get (ns ('ft:var'), '').replace (':', '=').replace (';', ',')
 		opts = ''
 		if variations:
-			opts = '--variations=%s' % variations
-		result.append ("../fonts/%s:%s:%s:*" % (font, opts, unistr (text)))
+			opts = f'--variations={variations}'
+		result.append(f"../fonts/{font}:{opts}:{unistr(text)}:*")
 
 	assert found
 	return '\n'.join (result) + '\n'
@@ -89,8 +89,8 @@ disabled_tests = []
 
 for x in sorted (os.listdir ('text-rendering-tests/testcases')):
 	if not x.endswith ('.html') or x == 'index.html': continue
-	out = 'tests/%s.tests' % x.split('.html')[0]
-	with open ('text-rendering-tests/testcases/' + x, 'r') as f: content = f.read ()
+	out = f"tests/{x.split('.html')[0]}.tests"
+	with open(f'text-rendering-tests/testcases/{x}', 'r') as f: content = f.read ()
 	with open (out, 'w') as f: f.write (extract_tests (content))
 	if out in disabled:
 		disabled_tests.append (out)

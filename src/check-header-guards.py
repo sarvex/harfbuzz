@@ -28,7 +28,9 @@ for x in HBHEADERS + HBSOURCES:
 	tag = x.upper ().replace ('.', '_').replace ('-', '_').replace(os.path.sep, '_').replace('/', '_')
 	with open (x, 'r', encoding='utf-8') as f: content = f.read ()
 	if len (re.findall (tag + r'\b', content)) != 3:
-		print ('Ouch, header file %s does not have correct preprocessor guards. Expected: %s' % (x, tag))
+		print(
+			f'Ouch, header file {x} does not have correct preprocessor guards. Expected: {tag}'
+		)
 		stat = 1
 
 sys.exit (stat)

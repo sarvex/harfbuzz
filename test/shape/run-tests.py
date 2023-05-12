@@ -4,7 +4,7 @@ import sys, os, subprocess, hashlib
 
 def shape_cmd(command):
 	global hb_shape, process
-	print (hb_shape + ' ' + " ".join(command))
+	print(f'{hb_shape} ' + " ".join(command))
 	process.stdin.write ((';'.join (command) + '\n').encode ("utf-8"))
 	process.stdin.flush ()
 	return process.stdout.readline().decode ("utf-8").strip ()
@@ -36,13 +36,9 @@ for filename in args:
 	if filename == '-':
 		print ("Running tests from standard input")
 	else:
-		print ("Running tests in " + filename)
+		print(f"Running tests in {filename}")
 
-	if filename == '-':
-		f = sys.stdin
-	else:
-		f = open (filename, encoding='utf8')
-
+	f = sys.stdin if filename == '-' else open (filename, encoding='utf8')
 	for line in f:
 		comment = False
 		if line.startswith ("#"):
@@ -50,7 +46,7 @@ for filename in args:
 			line = line[1:]
 
 			if line.startswith (' '):
-				print ("#%s" % line)
+				print(f"#{line}")
 				continue
 
 		line = line.strip ()
@@ -70,12 +66,13 @@ for filename in args:
 					if expected_hash:
 						actual_hash = hashlib.sha1 (ff.read()).hexdigest ().strip ()
 						if actual_hash != expected_hash:
-							print ('different version of %s found; Expected hash %s, got %s; skipping.' %
-								   (fontfile, expected_hash, actual_hash))
+							print(
+								f'different version of {fontfile} found; Expected hash {expected_hash}, got {actual_hash}; skipping.'
+							)
 							skips += 1
 							continue
 			except IOError:
-				print ('%s not found, skip.' % fontfile)
+				print(f'{fontfile} not found, skip.')
 				skips += 1
 				continue
 		else:
@@ -84,11 +81,9 @@ for filename in args:
 
 		extra_options = ["--shaper=ot"]
 		if glyphs_expected != '*':
-			extra_options.append("--verify")
-			extra_options.append("--unsafe-to-concat")
-
+			extra_options.extend(("--verify", "--unsafe-to-concat"))
 		if comment:
-			print ('# %s "%s" --unicodes %s' % (hb_shape, fontfile, unicodes))
+			print(f'# {hb_shape} "{fontfile}" --unicodes {unicodes}')
 			continue
 
 		if "--font-funcs=ft" in options and not have_freetype:
@@ -114,16 +109,16 @@ for filename in args:
 			glyphs2 = shape_cmd ([fontfile, "--font-funcs=ot"] + extra_options + ["--unicodes", unicodes] + options)
 
 			if glyphs1 != glyphs2 and glyphs_expected != '*':
-				print ("FT funcs: " + glyphs1, file=sys.stderr)
-				print ("OT funcs: " + glyphs2, file=sys.stderr)
+				print(f"FT funcs: {glyphs1}", file=sys.stderr)
+				print(f"OT funcs: {glyphs2}", file=sys.stderr)
 				fails += 1
 			else:
 				passes += 1
 
-		if glyphs1.strip() != glyphs_expected and glyphs_expected != '*':
+		if glyphs1.strip() != glyphs_expected != '*':
 			print ("hb-shape", fontfile, "--unicodes", unicodes, file=sys.stderr)
-			print ("Actual:   " + glyphs1, file=sys.stderr)
-			print ("Expected: " + glyphs_expected, file=sys.stderr)
+			print(f"Actual:   {glyphs1}", file=sys.stderr)
+			print(f"Expected: {glyphs_expected}", file=sys.stderr)
 			fails += 1
 		else:
 			passes += 1

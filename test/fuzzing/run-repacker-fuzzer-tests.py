@@ -24,7 +24,7 @@ def cmd (command):
 srcdir = os.getenv ("srcdir", ".")
 EXEEXT = os.getenv ("EXEEXT", "")
 top_builddir = os.getenv ("top_builddir", ".")
-hb_repacker_fuzzer = os.path.join (top_builddir, "hb-repacker-fuzzer" + EXEEXT)
+hb_repacker_fuzzer = os.path.join(top_builddir, f"hb-repacker-fuzzer{EXEEXT}")
 
 if not os.path.exists (hb_repacker_fuzzer):
         if len (sys.argv) < 2 or not os.path.exists (sys.argv[1]):
@@ -42,11 +42,11 @@ if os.getenv ('RUN_VALGRIND', ''):
 	if valgrind is None:
 		sys.exit ("""Valgrind requested but not found.""")
 
-def run_dir (parent_path):
+def run_dir(parent_path):
 	global fails
 	for file in os.listdir (parent_path):
 		path = os.path.join(parent_path, file)
-		print ("running repacker fuzzer against %s" % path)
+		print(f"running repacker fuzzer against {path}")
 		if valgrind:
 			text, returncode = cmd ([valgrind, '--leak-check=full', '--error-exitcode=1', hb_repacker_fuzzer, path])
 		else:
@@ -58,7 +58,7 @@ def run_dir (parent_path):
 			print (text)
 
 		if returncode != 0:
-			print ("failed for %s" % path)
+			print(f"failed for {path}")
 			fails = fails + 1
 
 

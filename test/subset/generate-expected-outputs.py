@@ -31,11 +31,14 @@ def generate_expected_output(input_file, unicodes, profile_flags, instance_flags
 	input_path = input_file
 	if not no_fonttools and instance_flags:
 		instance_path = os.path.join(tempfile.mkdtemp (), font_name)
-		args = ["fonttools", "varLib.instancer",
+		args = [
+			"fonttools",
+			"varLib.instancer",
 			"--no-overlap-flag",
 			"--no-recalc-timestamp",
-			"--output=%s" % instance_path,
-			input_file]
+			f"--output={instance_path}",
+			input_file,
+		]
 		args.extend(instance_flags)
 		check_call(args)
 		input_path = instance_path
@@ -44,12 +47,16 @@ def generate_expected_output(input_file, unicodes, profile_flags, instance_flags
 	args = ["fonttools", "subset", input_path]
 	if instance_flags:
 		args.extend(["--recalc-bounds"])
-	args.extend(["--drop-tables+=DSIG",
-		     "--drop-tables-=sbix",
-		     "--no-harfbuzz-repacker", # disable harfbuzz repacker so we aren't comparing to ourself.
-		     "--output-file=%s" % fonttools_path])
+	args.extend(
+		[
+			"--drop-tables+=DSIG",
+			"--drop-tables-=sbix",
+			"--no-harfbuzz-repacker",
+			f"--output-file={fonttools_path}",
+		]
+	)
 	if unicodes != "":
-		args.extend(["--unicodes=%s" % unicodes,])
+		args.extend([f"--unicodes={unicodes}"])
 
 	args.extend(profile_flags)
 	if not no_fonttools:
@@ -63,15 +70,16 @@ def generate_expected_output(input_file, unicodes, profile_flags, instance_flags
 	harfbuzz_path = os.path.join(tempfile.mkdtemp (), font_name)
 	args = [
 		hb_subset,
-		"--font-file=" + input_file,
-		"--output-file=" + harfbuzz_path,
+		f"--font-file={input_file}",
+		f"--output-file={harfbuzz_path}",
 		"--drop-tables+=DSIG",
-		"--drop-tables-=sbix"]
+		"--drop-tables-=sbix",
+	]
 	if unicodes != "":
-		args.extend(["--unicodes=%s" % unicodes,])
+		args.extend([f"--unicodes={unicodes}"])
 	args.extend(profile_flags)
 	if instance_flags:
-		args.extend(["--instance=%s" % ','.join(instance_flags)])
+		args.extend([f"--instance={','.join(instance_flags)}"])
 	check_call(args)
 
 	with io.StringIO () as fp:
@@ -101,11 +109,11 @@ for path in args:
 		test_suite = SubsetTestSuite(path, f.read())
 		output_directory = test_suite.get_output_directory()
 
-		print("Generating output files for %s" % output_directory)
+		print(f"Generating output files for {output_directory}")
 		for test in test_suite.tests():
 			unicodes = test.unicodes()
 			font_name = test.get_font_name()
 			no_fonttools = ("no_fonttools" in test.options)
-			print("Creating subset %s/%s" % (output_directory, font_name))
+			print(f"Creating subset {output_directory}/{font_name}")
 			generate_expected_output(test.font_path, unicodes, test.get_profile_flags(),
 						 test.get_instance_flags(), output_directory, font_name, no_fonttools=no_fonttools)

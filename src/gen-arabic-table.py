@@ -8,6 +8,7 @@ Input files:
 * https://unicode.org/Public/UCD/latest/ucd/Blocks.txt
 """
 
+
 import os.path, sys
 
 if len (sys.argv) != 4:
@@ -15,8 +16,11 @@ if len (sys.argv) != 4:
 
 files = [open (x, encoding='utf-8') for x in sys.argv[1:]]
 
-headers = [[files[0].readline (), files[0].readline ()], [files[2].readline (), files[2].readline ()]]
-headers.append (["UnicodeData.txt does not have a header."])
+headers = [
+	[files[0].readline(), files[0].readline()],
+	[files[2].readline(), files[2].readline()],
+	["UnicodeData.txt does not have a header."],
+]
 while files[0].readline ().find ('##################') < 0:
 	pass
 
@@ -35,11 +39,7 @@ def read_blocks(f):
 
 		uu = fields[0].split ('..')
 		start = int (uu[0], 16)
-		if len (uu) == 1:
-			end = start
-		else:
-			end = int (uu[1], 16)
-
+		end = start if len (uu) == 1 else int (uu[1], 16)
 		t = fields[1]
 
 		for u in range (start, end + 1):
@@ -62,11 +62,11 @@ def print_joining_table(f):
 		if fields[3] in ["ALAPH", "DALATH RISH"]:
 			value = "JOINING_GROUP_" + fields[3].replace(' ', '_')
 		else:
-			value = "JOINING_TYPE_" + fields[2]
+			value = f"JOINING_TYPE_{fields[2]}"
 		values[u] = value
 
 	short_value = {}
-	for value in sorted (set ([v for v in values.values ()] + ['JOINING_TYPE_X'])):
+	for value in sorted(set(list(values.values ()) + ['JOINING_TYPE_X'])):
 		short = ''.join(x[0] for x in value.split('_')[2:])
 		assert short not in short_value.values()
 		short_value[value] = short
@@ -77,7 +77,7 @@ def print_joining_table(f):
 
 	uu = sorted(values.keys())
 	num = len(values)
-	all_blocks = set([blocks[u] for u in uu])
+	all_blocks = {blocks[u] for u in uu}
 
 	last = -100000
 	ranges = []
@@ -118,7 +118,7 @@ def print_joining_table(f):
 			if u % 32 == 0:
 				print ()
 				print ("  /* %04X */ " % u, end="")
-			print ("%s," % short_value[value], end="")
+			print(f"{short_value[value]},", end="")
 		print ()
 
 		offset += end - start + 1
@@ -134,7 +134,7 @@ def print_joining_table(f):
 	print ("{")
 	print ("  switch (u >> %d)" % page_bits)
 	print ("  {")
-	pages = set([u>>page_bits for u in [s for s,e in ranges]+[e for s,e in ranges]])
+	pages = {u>>page_bits for u in [s for s,e in ranges]+[e for s,e in ranges]}
 	for p in sorted(pages):
 		print ("    case 0x%0Xu:" % p)
 		for (start,end) in ranges:
@@ -149,8 +149,8 @@ def print_joining_table(f):
 	print ("  return X;")
 	print ("}")
 	print ()
-	for value,short in short_value.items():
-		print ("#undef %s" % (short))
+	for short in short_value.values():
+		print(f"#undef {short}")
 	print ()
 
 LIGATURES = (

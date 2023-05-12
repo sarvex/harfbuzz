@@ -8,6 +8,7 @@ Input files:
 * https://unicode.org/Public/UCD/latest/ucd/Blocks.txt
 """
 
+
 import sys
 
 if len (sys.argv) != 4:
@@ -38,7 +39,7 @@ ALLOWED_BLOCKS = [
 
 files = [open (x, encoding='utf-8') for x in sys.argv[1:]]
 
-headers = [[f.readline () for i in range (2)] for f in files]
+headers = [[f.readline () for _ in range (2)] for f in files]
 
 unicode_data = [{} for _ in files]
 for i, f in enumerate (files):
@@ -54,11 +55,7 @@ for i, f in enumerate (files):
 
 		uu = fields[0].split ('..')
 		start = int (uu[0], 16)
-		if len (uu) == 1:
-			end = start
-		else:
-			end = int (uu[1], 16)
-
+		end = start if len (uu) == 1 else int (uu[1], 16)
 		t = fields[1]
 
 		for u in range (start, end + 1):
@@ -69,9 +66,9 @@ defaults = ('Other', 'Not_Applicable', 'No_Block')
 combined = {}
 for i,d in enumerate (unicode_data):
 	for u,v in d.items ():
-		if i == 2 and not u in combined:
+		if i == 2 and u not in combined:
 			continue
-		if not u in combined:
+		if u not in combined:
 			combined[u] = list (defaults)
 		combined[u][i] = v
 combined = {k:v for k,v in combined.items() if k in ALLOWED_SINGLES or v[2] in ALLOWED_BLOCKS}
@@ -383,37 +380,34 @@ position_overrides = {
 def matra_pos_left(u, block):
   return "PRE_M"
 def matra_pos_right(u, block):
-  if block == 'Devanagari':	return  'AFTER_SUB'
-  if block == 'Bengali':	return  'AFTER_POST'
-  if block == 'Gurmukhi':	return  'AFTER_POST'
-  if block == 'Gujarati':	return  'AFTER_POST'
-  if block == 'Oriya':		return  'AFTER_POST'
-  if block == 'Tamil':		return  'AFTER_POST'
-  if block == 'Telugu':		return  'BEFORE_SUB' if u <= 0x0C42 else 'AFTER_SUB'
-  if block == 'Kannada':	return  'BEFORE_SUB' if u < 0x0CC3 or u > 0x0CD6 else 'AFTER_SUB'
-  if block == 'Malayalam':	return  'AFTER_POST'
-  return 'AFTER_SUB'
+	if block == 'Devanagari':	return  'AFTER_SUB'
+	if block == 'Bengali':	return  'AFTER_POST'
+	if block == 'Gurmukhi':	return  'AFTER_POST'
+	if block == 'Gujarati':	return  'AFTER_POST'
+	if block == 'Oriya':		return  'AFTER_POST'
+	if block == 'Tamil':		return  'AFTER_POST'
+	if block == 'Telugu':		return  'BEFORE_SUB' if u <= 0x0C42 else 'AFTER_SUB'
+	if block == 'Kannada':	return  'BEFORE_SUB' if u < 0x0CC3 or u > 0x0CD6 else 'AFTER_SUB'
+	return 'AFTER_POST' if block == 'Malayalam' else 'AFTER_SUB'
 def matra_pos_top(u, block):
-  # BENG and MLYM don't have top matras.
-  if block == 'Devanagari':	return  'AFTER_SUB'
-  if block == 'Gurmukhi':	return  'AFTER_POST' # Deviate from spec
-  if block == 'Gujarati':	return  'AFTER_SUB'
-  if block == 'Oriya':		return  'AFTER_MAIN'
-  if block == 'Tamil':		return  'AFTER_SUB'
-  if block == 'Telugu':		return  'BEFORE_SUB'
-  if block == 'Kannada':	return  'BEFORE_SUB'
-  return 'AFTER_SUB'
+	# BENG and MLYM don't have top matras.
+	if block == 'Devanagari':	return  'AFTER_SUB'
+	if block == 'Gurmukhi':	return  'AFTER_POST' # Deviate from spec
+	if block == 'Gujarati':	return  'AFTER_SUB'
+	if block == 'Oriya':		return  'AFTER_MAIN'
+	if block == 'Tamil':		return  'AFTER_SUB'
+	if block == 'Telugu':		return  'BEFORE_SUB'
+	return 'BEFORE_SUB' if block == 'Kannada' else 'AFTER_SUB'
 def matra_pos_bottom(u, block):
-  if block == 'Devanagari':	return  'AFTER_SUB'
-  if block == 'Bengali':	return  'AFTER_SUB'
-  if block == 'Gurmukhi':	return  'AFTER_POST'
-  if block == 'Gujarati':	return  'AFTER_POST'
-  if block == 'Oriya':		return  'AFTER_SUB'
-  if block == 'Tamil':		return  'AFTER_POST'
-  if block == 'Telugu':		return  'BEFORE_SUB'
-  if block == 'Kannada':	return  'BEFORE_SUB'
-  if block == 'Malayalam':	return  'AFTER_POST'
-  return "AFTER_SUB"
+	if block == 'Devanagari':	return  'AFTER_SUB'
+	if block == 'Bengali':	return  'AFTER_SUB'
+	if block == 'Gurmukhi':	return  'AFTER_POST'
+	if block == 'Gujarati':	return  'AFTER_POST'
+	if block == 'Oriya':		return  'AFTER_SUB'
+	if block == 'Tamil':		return  'AFTER_POST'
+	if block == 'Telugu':		return  'BEFORE_SUB'
+	if block == 'Kannada':	return  'BEFORE_SUB'
+	return 'AFTER_POST' if block == 'Malayalam' else "AFTER_SUB"
 def indic_matra_position(u, pos, block): # Reposition matra
   if pos == 'PRE_C':	return matra_pos_left(u, block)
   if pos == 'POST_C':	return matra_pos_right(u, block)
@@ -495,7 +489,7 @@ print (" * on files with these headers:")
 print (" *")
 for h in headers:
 	for l in h:
-		print (" * %s" % (l.strip()))
+		print(f" * {l.strip()}")
 print (" */")
 print ()
 print ('#include "hb.hh"')
@@ -510,18 +504,18 @@ print ()
 
 # Print categories
 for shaper in categories:
-  print ('#include "hb-ot-shaper-%s-machine.hh"' % shaper)
+	print(f'#include "hb-ot-shaper-{shaper}-machine.hh"')
 print ()
 done = {}
 for shaper, shaper_cats in categories.items():
-  print ('/* %s */' % shaper)
-  for cat in shaper_cats:
-    v = shaper[0].upper()
-    if cat not in done:
-      print ("#define OT_%s %s_Cat(%s)" % (cat, v, cat))
-      done[cat] = v
-    else:
-      print ('static_assert (OT_%s == %s_Cat(%s), "");' % (cat, v, cat))
+	print(f'/* {shaper} */')
+	for cat in shaper_cats:
+		v = shaper[0].upper()
+		if cat not in done:
+			print(f"#define OT_{cat} {v}_Cat({cat})")
+			done[cat] = v
+		else:
+			print(f'static_assert (OT_{cat} == {v}_Cat({cat}), "");')
 print ()
 
 # Shorten values
@@ -572,16 +566,24 @@ for i in range (2):
 				raise Exception ("Duplicate short value alias", v, all_shorts[i][s])
 			all_shorts[i][s] = v
 			short[i][v] = s
-		cat_defs.append ((what_short[i] + '_' + s, what[i] + '_' + (v.upper () if i else v), str (values[i][v]), v))
+		cat_defs.append(
+			(
+				f'{what_short[i]}_{s}',
+				f'{what[i]}_' + (v.upper() if i else v),
+				str(values[i][v]),
+				v,
+			)
+		)
 
-maxlen_s = max ([len (c[0]) for c in cat_defs])
-maxlen_l = max ([len (c[1]) for c in cat_defs])
-maxlen_n = max ([len (c[2]) for c in cat_defs])
+maxlen_s = max(len (c[0]) for c in cat_defs)
+maxlen_l = max(len (c[1]) for c in cat_defs)
+maxlen_n = max(len (c[2]) for c in cat_defs)
 for s in what_short:
 	print ()
 	for c in [c for c in cat_defs if s in c[0]]:
-		print ("#define %s %s /* %s chars; %s */" %
-			(c[0].ljust (maxlen_s), c[1].ljust (maxlen_l), c[2].rjust (maxlen_n), c[3]))
+		print(
+			f"#define {c[0].ljust(maxlen_s)} {c[1].ljust(maxlen_l)} /* {c[2].rjust(maxlen_n)} chars; {c[3]} */"
+		)
 print ()
 print ('#pragma GCC diagnostic pop')
 print ()
@@ -594,12 +596,12 @@ print ()
 total = 0
 used = 0
 last_block = None
-def print_block (block, start, end, data):
+def print_block(block, start, end, data):
 	global total, used, last_block
 	if block and block != last_block:
 		print ()
 		print ()
-		print ("  /* %s */" % block)
+		print(f"  /* {block} */")
 	num = 0
 	assert start % 8 == 0
 	assert (end+1) % 8 == 0
@@ -610,7 +612,7 @@ def print_block (block, start, end, data):
 		if u in data:
 			num += 1
 		d = data.get (u, defaults)
-		print ("%9s" % ("_(%s,%s)," % (short[0][d[0]], short[1][d[1]])), end="")
+		print("%9s" % f"_({short[0][d[0]]},{short[1][d[1]]}),", end="")
 
 	total += end - start + 1
 	used += num
@@ -663,7 +665,7 @@ print ("hb_indic_get_categories (hb_codepoint_t u)")
 print ("{")
 print ("  switch (u >> %d)" % page_bits)
 print ("  {")
-pages = set ([u>>page_bits for u in starts+ends+list (singles.keys ())])
+pages = {u>>page_bits for u in starts+ends+list (singles.keys ())}
 for p in sorted(pages):
 	print ("    case 0x%0Xu:" % p)
 	for u,d in singles.items ():
@@ -687,8 +689,7 @@ for i in range (2):
 	print ()
 	vv = sorted (values[i].keys ())
 	for v in vv:
-		print ("#undef %s_%s" %
-			(what_short[i], short[i][v]))
+		print(f"#undef {what_short[i]}_{short[i][v]}")
 print ()
 print ('#endif')
 print ()

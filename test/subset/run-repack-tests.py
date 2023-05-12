@@ -22,9 +22,9 @@ except ImportError:
 
 ots_sanitize = shutil.which ("ots-sanitize")
 
-def subset_cmd (command):
+def subset_cmd(command):
 	global hb_subset, process
-	print (hb_subset + ' ' + " ".join(command))
+	print(f'{hb_subset} ' + " ".join(command))
 	process.stdin.write ((';'.join (command) + '\n').encode ("utf-8"))
 	process.stdin.flush ()
 	return process.stdout.readline().decode ("utf-8").strip ()
@@ -37,24 +37,26 @@ def cmd (command):
 	print (stderrdata, end="", file=sys.stderr)
 	return stdoutdata, p.returncode
 
-def fail_test (test, cli_args, message):
-	print ('ERROR: %s' % message)
+def fail_test(test, cli_args, message):
+	print(f'ERROR: {message}')
 	print ('Test State:')
-	print ('  test.font_name    %s' % test.font_name)
-	print ('  test.test_path %s' % os.path.abspath (test.test_path))
+	print(f'  test.font_name    {test.font_name}')
+	print(f'  test.test_path {os.path.abspath(test.test_path)}')
 	return 1
 
-def run_test (test, should_check_ots):
-	out_file = os.path.join (tempfile.mkdtemp (), test.font_name + '-subset.ttf')
-	cli_args = ["--font-file=" + test.font_path (),
-		    "--output-file=" + out_file,
-		    "--unicodes=%s" % test.codepoints_string (),
-		    "--drop-tables-=GPOS,GSUB,GDEF",]
+def run_test(test, should_check_ots):
+	out_file = os.path.join(tempfile.mkdtemp (), f'{test.font_name}-subset.ttf')
+	cli_args = [
+		f"--font-file={test.font_path()}",
+		f"--output-file={out_file}",
+		f"--unicodes={test.codepoints_string()}",
+		"--drop-tables-=GPOS,GSUB,GDEF",
+	]
 	print (' '.join (cli_args))
 	ret = subset_cmd (cli_args)
 
 	if ret != "success":
-		return fail_test (test, cli_args, "%s failed" % ' '.join (cli_args))
+		return fail_test(test, cli_args, f"{' '.join(cli_args)} failed")
 
 	try:
 		with TTFont (out_file) as font:
@@ -76,10 +78,10 @@ def has_ots ():
 		return False
 	return True
 
-def check_ots (path):
+def check_ots(path):
 	ots_report, returncode = cmd ([ots_sanitize, path])
 	if returncode:
-		print ("OTS Failure: %s" % ots_report)
+		print(f"OTS Failure: {ots_report}")
 		return False
 	return True
 
